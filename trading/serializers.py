@@ -10,7 +10,6 @@ class OfferSerializer(serializers.ModelSerializer):
         model = Offer
         exclude = ('is_active',)
         read_only_field = ('id',)
-        depth = 1
     user = UserSerializer()
     item = ItemSerializer()
 
@@ -18,8 +17,23 @@ class OfferSerializer(serializers.ModelSerializer):
 class OfferCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = '__all__'
+        exclude = ('is_active', )
         read_only_field = ('id',)
+
+    def validate(self, data):
+        if data['order_type'] == 'Sale':
+            if data['price'] > 1000:
+                raise serializers.ValidationError("u cant target price upper then 1000")
+            if data['entry_quantity'] > data['quantity']:
+                raise serializers.ValidationError("u cant sale stocks more than u have")
+        if data['order_type'] == 'Purchase':
+            if data['price'] < 10:
+                raise serializers.ValidationError("u cant target price lower 10")
+        if data['price'] < 0:
+            raise serializers.ValidationError("u can enter only positive value")
+        if data['item'].currency.is_not_deleted is False:
+            raise serializers.ValidationError("u cant use stock with not available currency")
+        return data
 
 
 class TradeSerializer(serializers.ModelSerializer):
@@ -27,7 +41,13 @@ class TradeSerializer(serializers.ModelSerializer):
         model = Trade
         fields = '__all__'
         read_only_field = ('id',)
-        depth = 1
+
+
+class TradeDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trade
+        fields = '__all__'
+        read_only_field = ('id',)
     item = ItemSerializer()
-    seller_offer = UserSerializer()
-    buyer_offer = UserSerializer()
+    seller_offer = OfferSerializer()
+    buyer_offer = OfferSerializer()

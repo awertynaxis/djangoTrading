@@ -1,11 +1,10 @@
-from django.urls import path, re_path
-from item.views import ItemListView, ItemDetailView, ItemCreateView, CurrencyListView, CurrencyCreateView, PriceListView
+from rest_framework import routers
+from item.views import ItemViewSet, CurrencyViewSet, PriceViewSet
 
-urlpatterns = [
-    path('items/', ItemListView.as_view(), name='items-list'),
-    re_path(r'^item_detail/(?P<item_id>\d+)$', ItemDetailView.as_view(), name='item-detail'),
-    path('item_create/', ItemCreateView.as_view(), name='item-create'),
-    path('currencies/', CurrencyListView.as_view(), name='currencies-list'),
-    path('currency_create/', CurrencyCreateView.as_view(), name='currency-create'),
-    path('price/', PriceListView.as_view(), name='price-list'),
-]
+router = routers.SimpleRouter()
+
+router.register(r'stock', ItemViewSet, basename='stock')
+router.register(r'currency', CurrencyViewSet, basename='currency')
+router.register(r'price', PriceViewSet, basename='price')
+
+urlpatterns = router.urls

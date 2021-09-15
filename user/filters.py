@@ -7,7 +7,7 @@ class WalletUserFilter(filters.FilterSet):
 
     class Meta:
         model = Wallet
-        fields = ['username', ]
+        fields = ('username', )
 
 
 class WatchlistUserFilter(filters.FilterSet):
@@ -15,7 +15,7 @@ class WatchlistUserFilter(filters.FilterSet):
 
     class Meta:
         model = Watchlist
-        fields = ['username', ]
+        fields = ('username', )
 
 
 class InventoryUserFilter(filters.FilterSet):
@@ -23,4 +23,4 @@ class InventoryUserFilter(filters.FilterSet):
 
     class Meta:
         model = Inventory
-        fields = ['username', ]
+        fields = ('username', )

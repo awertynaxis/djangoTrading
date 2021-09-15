@@ -1,60 +1,91 @@
-from rest_framework import status
+from rest_framework import mixins, viewsets, status
+from django.db.models import Q
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from item.models import Item, Currency, Price
-from item.serializers import ItemDetailSerializer, ItemSerializer, ItemCreateSerializer, CurrencySerializer, \
-    PriceSerializer
+from item.serializers import ItemDetailSerializer, ItemSerializer, \
+    ItemCreateUpdateSerializer, CurrencySerializer, \
+    PriceDetailSerializer, PriceSerializer
 from item.filters import ItemNameFilter, PriceItemFilter
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from user.permissions import BlackListPermission
 
 
-class ItemListView(ListAPIView):
-    """Uses to view all items in service or item's by name company"""
+class ItemViewSet(mixins.ListModelMixin,
+                  mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.CreateModelMixin,
+                  mixins.DestroyModelMixin,
+                  viewsets.GenericViewSet):
+    """A viewset for model Item that provides `retrieve`,
+    `create`, `list`, 'update' and 'delete' actions."""
     model = Item
     queryset = Item.objects.all()
-    serializer_class = ItemSerializer
     filterset_class = ItemNameFilter
+    serializer_action_classes = {
+        'list': ItemSerializer,
+        'retrieve': ItemDetailSerializer,
+        'create': ItemCreateUpdateSerializer,
+        'update': ItemCreateUpdateSerializer,
+        'delete': ItemSerializer,
+        'partial_update': ItemCreateUpdateSerializer
+    }
+
+    def get_serializer_class(self):
+        return self.serializer_action_classes[self.action]
 
 
-class ItemDetailView(RetrieveUpdateDestroyAPIView):
-    """Uses to view item detail info and delete it"""
-    model = Item
-    lookup_field = 'item_id'
-    serializer_class = ItemDetailSerializer
-
-    def get_object(self):
-        lookup_field_value = self.kwargs[self.lookup_field]
-        return Item.objects.get(pk=lookup_field_value)
-
-
-class ItemCreateView(CreateAPIView):
-    """Uses to create a new item"""
-    model = Item
-    serializer_class = ItemCreateSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-
-class CurrencyListView(ListAPIView):
-    """Uses to view all available currencies """
+class CurrencyViewSet(mixins.ListModelMixin,
+                      mixins.CreateModelMixin,
+                      mixins.RetrieveModelMixin,
+                      mixins.UpdateModelMixin,
+                      viewsets.GenericViewSet):
+    """A viewset for model Currency that provides `retrieve`,
+    `create`, update' and `list` actions."""
     model = Currency
-    queryset = Currency.objects.all()
+    queryset = Currency.objects.is_not_deleted()
     serializer_class = CurrencySerializer
 
+    @action(detail=False, methods=('get', ),
+            url_path='all-currency',
+            permission_classes=(BlackListPermission,))
+    def get_all_currency(self, request) -> Response:
+        """Allows to get all  'currency' in system,
+         available only for not banned users"""
+        queryset = Currency.objects.all()
+        serializer = CurrencySerializer(data=queryset, many=True)
+        serializer.is_valid()
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-class CurrencyCreateView(CreateAPIView):
-    """Uses to create a new currency """
-    model = Currency
-    serializer_class = CurrencySerializer
 
-
-class PriceListView(ListAPIView):
-    """Uses to check how price of stock was changed """
+class PriceViewSet(mixins.ListModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   viewsets.GenericViewSet,
+                   ):
+    """A viewset for model Price that provides `retrieve`,
+    `list`, 'update' and special 'get_filtered_date' actions."""
     model = Price
     queryset = Price.objects.all()
-    serializer_class = PriceSerializer
     filterset_class = PriceItemFilter
+    serializer_action_classes = {
+        'list': PriceSerializer,
+        'retrieve': PriceDetailSerializer,
+        'update': PriceDetailSerializer,
+        'partial_update': PriceDetailSerializer,
+        'get_filtered_date': PriceSerializer
+    }
+
+    def get_serializer_class(self):
+        return self.serializer_action_classes[self.action]
+
+    @action(detail=False, methods=('get', ), url_path='filter_q')
+    def get_filtered_date(self, request) -> Response:
+        """Allows to filter Price by 'item' or 'currency'"""
+        serializer = PriceSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            queryset = Price.objects.filter(Q(item=serializer.data['item'])
+                                            | Q(currency=serializer.data['currency']))
+            serializer_set = self.get_serializer(queryset, many=True)
+            return Response(data=serializer_set.data, status=status.HTTP_200_OK)
+        else:
+            Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

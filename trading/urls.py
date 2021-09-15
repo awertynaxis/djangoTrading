@@ -1,7 +1,9 @@
-from django.urls import path
-from trading.views import OfferListView, OfferCreateView
+from rest_framework import routers
+from trading.views import OfferViewSet, UserTradingViewSet
 
-urlpatterns = [
-    path('offers/', OfferListView.as_view(), name='offers-list'),
-    path('create_offer/', OfferCreateView.as_view(), name='offer-create'),
-]
+router = routers.SimpleRouter()
+
+router.register(r'offer', OfferViewSet, basename='offer')
+router.register(r'trade', UserTradingViewSet, basename='trade')
+
+urlpatterns = router.urls

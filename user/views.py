@@ -1,102 +1,122 @@
 from rest_framework import status
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView,  CreateAPIView, \
-    RetrieveDestroyAPIView, UpdateAPIView
-from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from user.models import Wallet, Watchlist, Inventory
-from user.serializers import WalletSerializer, WatchlistSerializer, InventorySerializer, AddItemSerializer, \
+from item.models import Item
+from trading.models import Offer
+from user.serializers import WalletSerializer, WatchlistSerializer, InventorySerializer, \
     WalletCreateSerializer, WalletDonateSerializer, WatchlistDetailSerializer
 from user.filters import WalletUserFilter, WatchlistUserFilter, InventoryUserFilter
 from rest_framework.response import Response
+from user.permissions import IsOwner, CantDelete
 
 
-class UserWalletListView(ListAPIView):
-    """Uses to view user's wallets"""
+class UserWalletViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.CreateModelMixin,
+                        mixins.DestroyModelMixin,
+                        viewsets.GenericViewSet):
+    """A viewset for model Wallet that provides `retrieve`, `create`,
+     `list`, 'update' and 'delete' actions with specific permissions."""
     model = Wallet
     queryset = Wallet.objects.all()
     serializer_class = WalletSerializer
     filterset_class = WalletUserFilter
+    permission_classes = (CantDelete, IsOwner)
+
+    serializer_action_classes = {
+        'list': WalletSerializer,
+        'retrieve': WalletSerializer,
+        'create': WalletCreateSerializer,
+        'update': WalletDonateSerializer,
+        'delete': WalletSerializer,
+        'partial_update': WalletDonateSerializer
+    }
+
+    permission_classes_by_action = {'create': (IsAuthenticated,),
+                                    'list': (IsAuthenticated,),
+                                    'delete': (CantDelete, IsAuthenticated, IsOwner),
+                                    'retrieve': (IsAuthenticated,),
+                                    'update': (IsAuthenticated, IsOwner),
+                                    'partial_update': (IsAuthenticated,)
+                                    }
+
+    def get_serializer_class(self):
+        return self.serializer_action_classes[self.action]
+
+    def get_permissions(self):
+        try:
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            return [permission() for permission in self.permission_classes]
 
 
-class UserWalletDeleteView(RetrieveDestroyAPIView):
-    """Uses to delete user's wallets"""
-    lookup_field = 'wallet_id'
-    model = Wallet
-    serializer_class = WalletSerializer
-
-    def get_object(self):
-        lookup_field_value = self.kwargs[self.lookup_field]
-        return Wallet.objects.get(pk=lookup_field_value)
-
-    def destroy(self, request, *args, **kwargs):
-        wallet = self.get_object()
-        if wallet.balance == 0:
-            self.perform_destroy(wallet)
-            return Response(status=status.HTTP_200_OK)
-        else:
-            error_message = {'Error': 'Sorry, u cant delete a wallet which not empty'}
-            return Response(data=error_message, status=status.HTTP_418_IM_A_TEAPOT)
-
-
-class UserWalletDonateView(UpdateAPIView):
-    """Uses to donate a money in user's wallet"""
-    lookup_field = 'wallet_id'
-    model = Wallet
-    serializer_class = WalletDonateSerializer
-
-    def get_object(self):
-        lookup_field_value = self.kwargs[self.lookup_field]
-        return Wallet.objects.get(pk=lookup_field_value)
-
-    def patch(self, request, *args, **kwargs):
-        wallet = self.get_object()
-        wallet_donate = request.data['balance']
-        wallet.balance += wallet_donate
-        wallet.save()
-        success_message = {'Success': f'u successfull donate {wallet_donate} {wallet.currency} for your wallet'}
-        return Response(success_message, status=status.HTTP_200_OK)
-
-
-class UserWalletAddView(CreateAPIView):
-    """Uses to create a wallet for logged user based on existed currencies"""
-    model = Wallet
-    serializer_class = WalletCreateSerializer
-
-    def perform_create(self, serializer):
-        user_id = self.request.user.id
-        user = User.objects.get(pk=user_id)
-        serializer.save(user=user)
-
-
-class UserWatchlistListView(ListAPIView):
-    """Uses to check favourites list of user's items"""
+class UserWatchlistViewSet(mixins.ListModelMixin,
+                           mixins.RetrieveModelMixin,
+                           mixins.CreateModelMixin,
+                           mixins.DestroyModelMixin,
+                           mixins.UpdateModelMixin,
+                           viewsets.GenericViewSet):
+    """A viewset for model Watchlist that provides `retrieve`, `create`,
+     `list`, 'update' and 'delete' actions."""
     model = Watchlist
     queryset = Watchlist.objects.all()
     serializer_class = WatchlistSerializer
     filterset_class = WatchlistUserFilter
 
+    serializer_action_classes = {
+        'list': WatchlistSerializer,
+        'retrieve':  WatchlistDetailSerializer,
+        'create': WatchlistSerializer,
+        'delete': WatchlistSerializer,
+        'update': WatchlistSerializer,
+        'partial_update': WatchlistSerializer
+    }
 
-class AddItemWatchListView(CreateAPIView):
-    """Add a new item to user's watchlist"""
-    model = Watchlist
-    serializer_class = AddItemSerializer
-
-    def perform_create(self, serializer):
-        user_id = self.request.user.id
-        user = User.objects.get(pk=user_id)
-        serializer.save(user=user)
-
-
-class UserWatchlistDeleteView(RetrieveUpdateDestroyAPIView):
-    """Uses to delete to check detail information about item in watchlist and delete"""
-    model = Watchlist
-    queryset = Watchlist.objects.all()
-    serializer_class = WatchlistDetailSerializer
-    http_method_names = ['get', 'head', 'delete']
+    def get_serializer_class(self):
+        return self.serializer_action_classes[self.action]
 
 
-class UserInventoryListView(ListAPIView):
-    """Uses to check a user's current items in inventory"""
+class UserInventoryViewSet(mixins.ListModelMixin,
+                           viewsets.GenericViewSet):
+    """Uses to check a user's current items in inventory and
+    via action 'get_statistics' can get some stats"""
     model = Inventory
     queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
     filterset_class = InventoryUserFilter
+
+    serializer_action_classes = {
+        'list': WatchlistSerializer,
+    }
+
+    def get_serializer_class(self):
+        return self.serializer_action_classes[self.action]
+
+    def list(self, request, *args, **kwargs):
+        queryset = Inventory.objects.filter(user=request.user)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=('get',), url_path='user-statistics', permission_classes=(IsAuthenticated,))
+    def get_statistics(self, request) -> Response:
+        """Allows to get stats for user"""
+        stocks_number = Item.objects.all().count()
+        watchlist_number = Watchlist.objects.filter(user=request.user).count()
+        wallet_number = Wallet.objects.filter(user=request.user).count()
+        sales_number = Offer.objects.filter(user=request.user, order_type='Sale').count()
+        purchase_number = Offer.objects.filter(user=request.user, order_type='Purchase').count()
+        statistic = {'stocks': stocks_number,
+                     'watchlist': watchlist_number,
+                     'wallets': wallet_number,
+                     'sales': sales_number,
+                     'purchases': purchase_number}
+        return Response(data=statistic, status=status.HTTP_200_OK)

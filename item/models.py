@@ -1,4 +1,5 @@
 from django.db import models
+from item.managers import CurrencyManager
 
 
 class StockBase(models.Model):
@@ -13,9 +14,13 @@ class StockBase(models.Model):
 class Currency(StockBase):
     """Currency"""
 
+    is_not_deleted = models.BooleanField(default=True)
+
     class Meta:
         verbose_name = "Currency"
         verbose_name_plural = "Currencies"
+
+    objects = CurrencyManager()
 
     def __str__(self):
         return self.code
@@ -23,9 +28,19 @@ class Currency(StockBase):
 
 class Item(StockBase):
     """Particular stock"""
-    price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
-    currency = models.ForeignKey(Currency, blank=True, null=True, on_delete=models.SET_NULL)
-    details = models.TextField("Details", blank=True, null=True, max_length=512)
+    price = models.DecimalField(max_digits=7,
+                                decimal_places=2,
+                                blank=True,
+                                null=True)
+    currency = models.ForeignKey(Currency,
+                                 blank=True,
+                                 null=True,
+                                 on_delete=models.CASCADE,
+                                 related_name='item')
+    details = models.TextField("Details",
+                               blank=True,
+                               null=True,
+                               max_length=512)
 
     def __str__(self):
         return self.code
@@ -33,9 +48,20 @@ class Item(StockBase):
 
 class Price(models.Model):
     """Item prices"""
-    currency = models.ForeignKey(Currency, blank=True, null=True, on_delete=models.SET_NULL)
-    item = models.ForeignKey(Item, blank=True, null=True, on_delete=models.CASCADE, related_name='prices')
-    price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+    currency = models.ForeignKey(Currency,
+                                 blank=True,
+                                 null=True,
+                                 on_delete=models.CASCADE,
+                                 related_name='price')
+    item = models.ForeignKey(Item,
+                             blank=True,
+                             null=True,
+                             on_delete=models.CASCADE,
+                             related_name='prices')
+    price = models.DecimalField(max_digits=7,
+                                decimal_places=2,
+                                blank=True,
+                                null=True)
     date = models.DateTimeField(unique=True, blank=True, null=True)
 
     def __str__(self):

@@ -4,11 +4,12 @@ from item.models import Price, Item
 
 class ItemNameFilter(filters.FilterSet):
     name = filters.CharFilter(field_name='name', lookup_expr='exact')
-    currency = filters.CharFilter(field_name='currency__code', lookup_expr='exact')
+    currency = filters.CharFilter(field_name='currency__code',
+                                  lookup_expr='exact')
 
     class Meta:
         model = Item
-        fields = ['name', 'currency']
+        fields = ('name', 'currency')
 
 
 class PriceItemFilter(filters.FilterSet):
@@ -16,4 +17,4 @@ class PriceItemFilter(filters.FilterSet):
 
     class Meta:
         model = Price
-        fields = ['item', ]
+        fields = ('item', )

@@ -1,0 +1,65 @@
+[
+{
+    "model": "item.currency",
+    "pk": 1,
+    "fields": {
+        "code": "USD",
+        "name": "Dollares",
+        "is_not_deleted": true
+    }
+},
+{
+    "model": "item.currency",
+    "pk": 2,
+    "fields": {
+        "code": "EU",
+        "name": "Euro",
+        "is_not_deleted": true
+    }
+},
+{
+    "model": "item.currency",
+    "pk": 3,
+    "fields": {
+        "code": "BY",
+        "name": "Belarussian rubles",
+        "is_not_deleted": true
+    }
+},
+{
+    "model": "item.currency",
+    "pk": 4,
+    "fields": {
+        "code": "GBP",
+        "name": "Pound",
+        "is_not_deleted": true
+    }
+},
+{
+    "model": "item.currency",
+    "pk": 5,
+    "fields": {
+        "code": "RU",
+        "name": "Russian rubles",
+        "is_not_deleted": true
+    }
+},
+{
+    "model": "item.currency",
+    "pk": 6,
+    "fields": {
+        "code": "Huy",
+        "name": "Huylo",
+        "is_not_deleted": true
+    }
+},
+{
+    "model": "item.currency",
+    "pk": 7,
+    "fields": {
+        "code": "JO",
+        "name": "Jooo",
+        "is_not_deleted": true
+    }
+}
+]
