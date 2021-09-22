@@ -2,19 +2,16 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from item.models import Item
+from trading.enums import OrderType
 
 
 class Offer(models.Model):
     """Request to buy or sell specific stocks"""
-    OrderType = (
-        ('Sale', 'Sale of stock'),
-        ('Purchase', 'Purchase of stock')
-    )
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="offers")
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="offer")
     entry_quantity = models.IntegerField("Requested quantity", validators=[MinValueValidator(1)])
     quantity = models.IntegerField("Current quantity", default=0)
-    order_type = models.CharField(max_length=20, choices=OrderType)
+    order_type = models.CharField(max_length=20, choices=OrderType.get_order_types())
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
@@ -35,7 +32,7 @@ class Trade(models.Model):
                                     null=True,
                                     related_name='buyer_trade',
                                     on_delete=models.CASCADE)
-    quantity = models.IntegerField()
+    quantity = models.IntegerField(validators=[MinValueValidator(0)])
     unit_price = models.DecimalField(max_digits=7, decimal_places=2)
     description = models.TextField(max_length=120, blank=True, null=True)
 

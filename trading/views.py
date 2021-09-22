@@ -4,7 +4,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from trading.models import Offer, Trade
 from user.permissions import BlackListPermission, IsOwner, CreateOfferPermission
-from trading.serializers import OfferSerializer, OfferCreateSerializer, TradeSerializer, TradeDetailSerializer
+from trading.serializers import (
+    OfferSerializer,
+    OfferCreateSerializer,
+    TradeSerializer,
+    TradeDetailSerializer)
 from trading.filters import OfferUserFilter
 
 

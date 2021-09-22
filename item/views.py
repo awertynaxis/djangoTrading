@@ -3,9 +3,14 @@ from django.db.models import Q
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from item.models import Item, Currency, Price
-from item.serializers import ItemDetailSerializer, ItemSerializer, \
-    ItemCreateUpdateSerializer, CurrencySerializer, \
-    PriceDetailSerializer, PriceSerializer
+from item.serializers import (
+    ItemDetailSerializer,
+    ItemSerializer,
+    ItemCreateUpdateSerializer,
+    CurrencySerializer,
+    PriceDetailSerializer,
+    PriceSerializer
+)
 from item.filters import ItemNameFilter, PriceItemFilter
 from user.permissions import BlackListPermission
 
@@ -52,8 +57,7 @@ class CurrencyViewSet(mixins.ListModelMixin,
         """Allows to get all  'currency' in system,
          available only for not banned users"""
         queryset = Currency.objects.all()
-        serializer = CurrencySerializer(data=queryset, many=True)
-        serializer.is_valid()
+        serializer = CurrencySerializer(queryset, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
@@ -82,10 +86,10 @@ class PriceViewSet(mixins.ListModelMixin,
     def get_filtered_date(self, request) -> Response:
         """Allows to filter Price by 'item' or 'currency'"""
         serializer = PriceSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            queryset = Price.objects.filter(Q(item=serializer.data['item'])
-                                            | Q(currency=serializer.data['currency']))
-            serializer_set = self.get_serializer(queryset, many=True)
-            return Response(data=serializer_set.data, status=status.HTTP_200_OK)
-        else:
-            Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+
+        queryset = Price.objects.filter(
+            Q(item=serializer.data['item']) | Q(currency=serializer.data['currency'])
+        )
+        serializer_set = self.get_serializer(queryset, many=True)
+        return Response(data=serializer_set.data, status=status.HTTP_200_OK)

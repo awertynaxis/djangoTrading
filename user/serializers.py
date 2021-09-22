@@ -2,6 +2,7 @@ from rest_framework import serializers
 from user.models import Wallet, Watchlist, Inventory
 from item.models import Currency, Item
 from django.contrib.auth.models import User
+from rest_framework_jwt.settings import api_settings
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -44,14 +45,15 @@ class WalletCreateSerializer(serializers.ModelSerializer):
 
 
 class WalletDonateSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Wallet
         fields = ('balance', )
-    balance = serializers.DecimalField(max_digits=20, decimal_places=2)
+    balance = serializers.DecimalField(max_digits=20, decimal_places=2, min_value=0)
 
     def update(self, instance, validated_data):
-        instance.balance += validated_data.get('balance', instance.balance)
-        instance.save()
+        instance.balance += validated_data.get('balance', 0)
+        instance.save(update_fields=('balance',))
         return instance
 
     @staticmethod
@@ -104,5 +106,32 @@ class WatchlistSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         item_data = validated_data.pop('item')
         instance.item = item_data
+        instance.save(update_fields=('item',))
+        return instance
+
+
+class UserSerializerWithToken(serializers.ModelSerializer):
+
+    token = serializers.SerializerMethodField()
+    password = serializers.CharField(write_only=True)
+
+    @staticmethod
+    def get_token(obj):
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+
+        payload = jwt_payload_handler(obj)
+        token = jwt_encode_handler(payload)
+        return token
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        instance = self.Meta.model(**validated_data)
+        if password is not None:
+            instance.set_password(password)
         instance.save()
         return instance
+
+    class Meta:
+        model = User
+        fields = ('token', 'username', 'password')

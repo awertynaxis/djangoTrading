@@ -1,12 +1,20 @@
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from django.contrib.auth.models import User
+from django.db.models import Count, Q
+from trading.enums import OrderType
 from user.models import Wallet, Watchlist, Inventory
-from item.models import Item
-from trading.models import Offer
-from user.serializers import WalletSerializer, WatchlistSerializer, InventorySerializer, \
-    WalletCreateSerializer, WalletDonateSerializer, WatchlistDetailSerializer
+from user.serializers import (
+    WalletSerializer,
+    WatchlistSerializer,
+    InventorySerializer,
+    WalletCreateSerializer,
+    WalletDonateSerializer,
+    WatchlistDetailSerializer,
+    UserSerializerWithToken
+)
 from user.filters import WalletUserFilter, WatchlistUserFilter, InventoryUserFilter
 from rest_framework.response import Response
 from user.permissions import IsOwner, CantDelete
@@ -68,7 +76,7 @@ class UserWatchlistViewSet(mixins.ListModelMixin,
 
     serializer_action_classes = {
         'list': WatchlistSerializer,
-        'retrieve':  WatchlistDetailSerializer,
+        'retrieve': WatchlistDetailSerializer,
         'create': WatchlistSerializer,
         'delete': WatchlistSerializer,
         'update': WatchlistSerializer,
@@ -109,14 +117,29 @@ class UserInventoryViewSet(mixins.ListModelMixin,
     @action(detail=False, methods=('get',), url_path='user-statistics', permission_classes=(IsAuthenticated,))
     def get_statistics(self, request) -> Response:
         """Allows to get stats for user"""
-        stocks_number = Item.objects.all().count()
-        watchlist_number = Watchlist.objects.filter(user=request.user).count()
-        wallet_number = Wallet.objects.filter(user=request.user).count()
-        sales_number = Offer.objects.filter(user=request.user, order_type='Sale').count()
-        purchase_number = Offer.objects.filter(user=request.user, order_type='Purchase').count()
-        statistic = {'stocks': stocks_number,
-                     'watchlist': watchlist_number,
-                     'wallets': wallet_number,
-                     'sales': sales_number,
-                     'purchases': purchase_number}
+        stats = User.objects.filter(id=request.user.id).aggregate(
+            wallet_count=Count('wallets', distinct=True),
+            item_in_watchlist_count=Count('watchlists', distinct=True),
+            inventories_count=Count('inventories', distinct=True),
+            sold_offers_count=Count('offers', filter=Q(
+                offers__order_type=OrderType.SALE.value
+            ), distinct=True),
+            bought_offers_count=Count('offers', filter=Q(
+                offers__order_type=OrderType.PURCHASE.value
+            ), distinct=True)
+        )
+        statistic = {'inventory': stats['inventories_count'],
+                     'wallets': stats['wallet_count'],
+                     'watchlist': stats['item_in_watchlist_count'],
+                     'sold_offers': stats['sold_offers_count'],
+                     'bought_offers': stats['bought_offers_count']
+                     }
         return Response(data=statistic, status=status.HTTP_200_OK)
+
+
+class CreateUserTokenViewSet(mixins.CreateModelMixin,
+                             viewsets.GenericViewSet):
+    """Allows to register a new user in system and get token for him"""
+    model = User
+    serializer_class = UserSerializerWithToken
+    permission_classes = (permissions.AllowAny,)

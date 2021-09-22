@@ -1,16 +1,24 @@
-# # from __future__ import annotations
-# from django.db import models
-# from django.apps import apps
-# from typing import TYPE_CHECKING
-# # if TYPE_CHECKING:
-# # from user.models import Wallet
-# # Wallet = apps.get_model('user', 'Wallet')
-#
-#
-# class UserWalletManager(models.Manager):
-#
-#     def create(self, user, currency, balance=0):
-#         wallet = Wallet(user=user, currency=currency, balance=balance)
-#         wallet.save()
-#         return wallet
+from django.db import models
 
+
+class UserWalletManager(models.Manager):
+    """This manager uses to create wallet model in serializer"""
+
+    @staticmethod
+    def create(user, currency, balance=0):
+        from user.models import Wallet
+
+        wallet = Wallet(user=user, currency=currency, balance=balance)
+        wallet.save()
+        return wallet
+
+
+class UserWatchlistManager(models.Manager):
+    """This manager uses to create watchlist model in serializer"""
+
+    @staticmethod
+    def create(user, item):
+        from user.models import Watchlist
+        watchlist = Watchlist(user=user, item=item)
+        watchlist.save()
+        return watchlist

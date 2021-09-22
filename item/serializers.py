@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from item.validators import positive_price_validator
 from item.models import Currency, Item, Price
 
 
@@ -18,7 +18,7 @@ class CurrencySerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.code = validated_data.get('code', instance.code)
         instance.name = validated_data.get('name', instance.name)
-        instance.save()
+        instance.save(update_fields=('code', 'name'))
         return instance
 
     @staticmethod
@@ -83,11 +83,6 @@ class PriceSerializer(serializers.ModelSerializer):
         read_only_field = ('id', )
 
 
-def positive_price(value):
-    if value < 0:
-        raise serializers.ValidationError('price of stock must be upper 0')
-
-
 class PriceDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Price
@@ -95,6 +90,6 @@ class PriceDetailSerializer(serializers.ModelSerializer):
         read_only_field = ('id', )
     currency = CurrencySerializer()
     item = ItemSerializer()
-    price = serializers.DecimalField(validators=(positive_price,),
-                                     max_digits=20,
-                                     decimal_places=2)
+    price = serializers.DecimalField(
+        validators=(positive_price_validator,), max_digits=20, decimal_places=2
+    )
