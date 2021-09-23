@@ -6,4 +6,4 @@ WORKDIR opt/djangoTrading/
 
 RUN pip install -r requirements.txt --no-cache-dir
 
-ENTRYPOINT [ "/bin/bash", "/opt/djangoTradin/entrypoint.sh" ]
+ENTRYPOINT [ "/bin/bash", "/opt/djangoTrading/entrypoint.sh" ]
