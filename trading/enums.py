@@ -7,4 +7,4 @@ class OrderType(Enum):
 
     @classmethod
     def get_order_types(cls):
-        return [(tag.value,tag) for tag in cls]
+        return [(tag.value, tag) for tag in cls]

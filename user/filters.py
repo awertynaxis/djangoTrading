@@ -3,7 +3,10 @@ from django_filters import rest_framework as filters
 
 
 class WalletUserFilter(filters.FilterSet):
-    username = filters.CharFilter(field_name='user__username', lookup_expr='exact')
+    username = filters.CharFilter(
+        field_name='user__username',
+        lookup_expr='exact'
+    )
 
     class Meta:
         model = Wallet
@@ -11,7 +14,10 @@ class WalletUserFilter(filters.FilterSet):
 
 
 class WatchlistUserFilter(filters.FilterSet):
-    username = filters.CharFilter(field_name='user__username', lookup_expr='exact')
+    username = filters.CharFilter(
+        field_name='user__username',
+        lookup_expr='exact'
+    )
 
     class Meta:
         model = Watchlist
@@ -19,7 +25,10 @@ class WatchlistUserFilter(filters.FilterSet):
 
 
 class InventoryUserFilter(filters.FilterSet):
-    username = filters.CharFilter(field_name='user__username', lookup_expr='exact')
+    username = filters.CharFilter(
+        field_name='user__username',
+        lookup_expr='exact'
+    )
 
     class Meta:
         model = Inventory

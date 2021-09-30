@@ -99,4 +99,4 @@ venv.bak/
 *.sublime-project
 
 # static
-.static/
+./static/

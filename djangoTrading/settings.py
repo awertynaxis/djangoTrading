@@ -11,28 +11,26 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-import environ
+from dotenv import load_dotenv
 import os
 
-env = environ.Env()
+from celery.schedules import crontab
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str(os.getenv('DEBUGMODE', True))
 
-ALLOWED_HOSTS = [
-    '*'
-]
-
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split()
 
 # Application definition
 
@@ -86,9 +84,6 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
-    # 'DEFAULT_PERMISSION_CLASSES': (
-    #     'rest_framework.permissions.IsAuthenticated',
-    # )
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
@@ -97,17 +92,25 @@ REST_FRAMEWORK = {
 }
 
 # REDIS related settings
-# REDIS_HOST = '0.0.0.0'
-# REDIS_PORT = '6379'
-REDIS_HOST = env('REDIS_HOST')
-REDIS_PORT = env('REDIS_PORT')
-# CELERY_ALWAYS_EAGER = False
-CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
-CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}  
-CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+REDIS_HOST = str(os.getenv('REDIS_HOST'))
+REDIS_PORT = str(os.getenv('REDIS_PORT'))
+CELERY_ALWAYS_EAGER = False
+BROKER_URL = f'redis://redis:{REDIS_PORT}/0'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = f'redis://redis:{REDIS_PORT}/0'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+CELERY_IMPORTS = [
+    'user.tasks',
+]
+
+CELERYBEAT_SCHEDULE = {
+    'make-trade': {
+        'task': 'user.tasks.make_trade',
+        'schedule': crontab(minute='*/1'),
+    },
+}
 
 WSGI_APPLICATION = 'djangoTrading.wsgi.application'
 
@@ -118,12 +121,12 @@ WSGI_APPLICATION = 'djangoTrading.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': env('DATABASE_NAME'),
-        'USER': env('DATABASE_USER'),
-        'PASSWORD': env('DATABASE_PASSWORD'),
-        'HOST': env('DATABASE_HOST'),
-        'PORT': env('DATABASE_PORT'),
+        'ENGINE': str(os.getenv('DATABASE_ENGINE', 'django.db.backends.postgresql_psycopg2')),
+        'NAME': str(os.getenv('DATABASE_NAME', 'trading')),
+        'USER': str(os.getenv('DATABASE_USER', 'postgres')),
+        'PASSWORD': str(os.getenv('DATABASE_PASSWORD', 'postgres')),
+        'HOST': str(os.getenv('DATABASE_HOST', 'localhost')),
+        'PORT': str(os.getenv('DATABASE_PORT', '5432')),
     }
 }
 
@@ -165,6 +168,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

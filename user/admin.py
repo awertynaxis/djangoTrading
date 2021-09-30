@@ -24,5 +24,5 @@ class Inventory(admin.ModelAdmin):
 
 @admin.register(BlackList)
 class BlackList(admin.ModelAdmin):
-    fields = ('user', 'banned')
+    fields = ('user', )
     search_fields = ('user', )

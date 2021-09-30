@@ -1,17 +1,10 @@
 import pytest
 from django.urls import reverse
-from djangoTrading.conftest import data, currency, item, CurrencyFactory , fixture
 from item.models import Item, Currency
-from item.serializers import ItemSerializer
+from item.serializers import ItemRetrieveSerializer
 import factory
 from pytest_factoryboy import register
 from django_factories import Factory
-
-# def test_currency_factory(currency_factory):
-#     assert isinstance(currency_factory, CurrencyFactory)
-#
-# def test_currency(currency_factory):
-#     assert isinstance(currency_factory, Currency)
 
 
 @register
@@ -19,28 +12,29 @@ class SuperFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Currency
     code = 'GO'
-    name = 'Govno'
+    name = 'Gorecka'
 
 
 def test_currency_factory(currency_super):
     assert isinstance(currency_super, Currency)
 
-# @pytest.fixture
-# def currency_factory(request,db):
-#     factory = Factory(Currency)
-#     return factory(request)
+
+@pytest.fixture
+def currency_factory(request, db):
+    factorie = Factory(Currency)
+    return factorie(request)
 
 
-# @pytest.mark.django_db
-# def test_my_item(currency_factory):
-#     currency = currency_factory()
-#     assert currency is not None
-#     assert Currency.objects.count() == 1
+@pytest.mark.django_db
+def test_my_item(currency_factory):
+    currency = currency_factory()
+    assert currency is not None
+    assert Currency.objects.count() == 1
 
 
 @pytest.mark.django_db
 def test_item_serializer(data):
-    serializer = ItemSerializer(data=data)
+    serializer = ItemRetrieveSerializer(data=data)
     assert serializer.is_valid()
 
 
@@ -79,4 +73,3 @@ def test_currency_list_view(client, currency: Currency):
     assert responce.status_code == 200
     assert Currency.objects.count() == 1
     assert Currency.objects.filter(code=currency.code)
-# Create your tests here.

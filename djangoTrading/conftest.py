@@ -1,10 +1,9 @@
 import pytest
-from typing import Dict
-from item.models import Item, Currency, Price
+from typing import Dict, Union
+from item.models import Item, Currency
 from pytest_factoryboy import register
 from django_factories import Factory
 import factory
-from faker import Factory
 faker = Factory.create()
 
 
@@ -29,7 +28,7 @@ def currency_factory(request, db):
 
 
 @pytest.fixture
-def data() -> Dict:
+def data() -> Dict[str, Union[str, int]]:
     data = {
         'id': 1,
         'code': 'Hol',
@@ -47,5 +46,9 @@ def currency(db) -> Currency:
 
 @pytest.fixture
 def item(db, currency: Currency) -> Item:
-    item = Item.objects.create(code='Sos', name='Soska', price=20, currency=currency)
+    item = Item.objects.create(
+        code='Sos',
+        name='Soska',
+        price=20,
+        currency=currency)
     return item

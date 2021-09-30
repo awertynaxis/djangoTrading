@@ -9,9 +9,6 @@ class CurrencySerializer(serializers.ModelSerializer):
         fields = ('code', 'name')
         read_only_field = ('id',)
 
-    code = serializers.CharField(max_length=8)
-    name = serializers.CharField(max_length=128)
-
     def create(self, validated_data):
         return Currency.objects.create(**validated_data)
 
@@ -24,20 +21,20 @@ class CurrencySerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_code(value):
 
-        if value not in value.upper():
+        if value != value.upper():
             raise serializers.ValidationError('Code must be in upper case')
         return value
 
     @staticmethod
     def validate_name(value):
 
-        if value == 'Huy':
-            raise serializers.ValidationError('Sorry u cant use Huy'
+        if value == 'PHP':
+            raise serializers.ValidationError('Sorry u cant use PHP'
                                               ' for currency naming')
         return value
 
 
-class ItemSerializer(serializers.ModelSerializer):
+class ItemListDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         exclude = ('details', )
@@ -47,12 +44,12 @@ class ItemSerializer(serializers.ModelSerializer):
 class ItemCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = '__all__'
+        fields = ('price', 'currency', 'details')
         read_only_field = ('id',)
 
     def validate(self, data):
 
-        bad_words = ('Fuck', 'Cunt', 'Dick')
+        bad_words = ('Index', 'Forex', 'Bitcoin')
         if data['price'] > 100.00:
             raise serializers.ValidationError("start price of stock"
                                               " can't be upper 100.00")
@@ -68,28 +65,28 @@ class ItemCreateUpdateSerializer(serializers.ModelSerializer):
         return data
 
 
-class ItemDetailSerializer(serializers.ModelSerializer):
+class ItemRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = '__all__'
+        fields = ('price', 'currency', 'details')
         read_only_field = ('id', )
     currency = CurrencySerializer()
 
 
-class PriceSerializer(serializers.ModelSerializer):
+class PriceListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Price
-        fields = '__all__'
+        fields = ('price', 'currency', 'details')
         read_only_field = ('id', )
 
 
-class PriceDetailSerializer(serializers.ModelSerializer):
+class PriceRetrieveUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Price
-        fields = '__all__'
+        fields = ('price', 'currency', 'item', 'date')
         read_only_field = ('id', )
     currency = CurrencySerializer()
-    item = ItemSerializer()
+    item = ItemListDeleteSerializer()
     price = serializers.DecimalField(
         validators=(positive_price_validator,), max_digits=20, decimal_places=2
     )

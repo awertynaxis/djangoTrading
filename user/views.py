@@ -7,15 +7,20 @@ from django.db.models import Count, Q
 from trading.enums import OrderType
 from user.models import Wallet, Watchlist, Inventory
 from user.serializers import (
-    WalletSerializer,
-    WatchlistSerializer,
+    WalletListRetrieveDeleteSerializer,
+    WatchlistListCreateUpdateDeleteSerializer,
     InventorySerializer,
     WalletCreateSerializer,
     WalletDonateSerializer,
-    WatchlistDetailSerializer,
-    UserSerializerWithToken
+    WatchlistRetrieveSerializer,
+    UserWithTokenSerializer,
+    UserWalletsListSerializer
 )
-from user.filters import WalletUserFilter, WatchlistUserFilter, InventoryUserFilter
+from user.filters import (
+    WalletUserFilter,
+    WatchlistUserFilter,
+    InventoryUserFilter
+)
 from rest_framework.response import Response
 from user.permissions import IsOwner, CantDelete
 
@@ -30,25 +35,31 @@ class UserWalletViewSet(mixins.ListModelMixin,
      `list`, 'update' and 'delete' actions with specific permissions."""
     model = Wallet
     queryset = Wallet.objects.all()
-    serializer_class = WalletSerializer
     filterset_class = WalletUserFilter
     permission_classes = (CantDelete, IsOwner)
 
     serializer_action_classes = {
-        'list': WalletSerializer,
-        'retrieve': WalletSerializer,
+        'list': WalletListRetrieveDeleteSerializer,
+        'retrieve': WalletListRetrieveDeleteSerializer,
         'create': WalletCreateSerializer,
         'update': WalletDonateSerializer,
-        'delete': WalletSerializer,
+        'delete': WalletListRetrieveDeleteSerializer,
         'partial_update': WalletDonateSerializer
     }
 
     permission_classes_by_action = {'create': (IsAuthenticated,),
                                     'list': (IsAuthenticated,),
-                                    'delete': (CantDelete, IsAuthenticated, IsOwner),
-                                    'retrieve': (IsAuthenticated,),
+                                    'delete': (
+                                        CantDelete,
+                                        IsAuthenticated,
+                                        IsOwner
+                                    ),
+                                    'retrieve': (IsAuthenticated, IsOwner),
                                     'update': (IsAuthenticated, IsOwner),
-                                    'partial_update': (IsAuthenticated,)
+                                    'partial_update': (
+                                        IsAuthenticated,
+                                        IsOwner
+                                    )
                                     }
 
     def get_serializer_class(self):
@@ -56,7 +67,8 @@ class UserWalletViewSet(mixins.ListModelMixin,
 
     def get_permissions(self):
         try:
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
+            return [permission() for permission
+                    in self.permission_classes_by_action[self.action]]
         except KeyError:
             return [permission() for permission in self.permission_classes]
 
@@ -71,16 +83,15 @@ class UserWatchlistViewSet(mixins.ListModelMixin,
      `list`, 'update' and 'delete' actions."""
     model = Watchlist
     queryset = Watchlist.objects.all()
-    serializer_class = WatchlistSerializer
     filterset_class = WatchlistUserFilter
 
     serializer_action_classes = {
-        'list': WatchlistSerializer,
-        'retrieve': WatchlistDetailSerializer,
-        'create': WatchlistSerializer,
-        'delete': WatchlistSerializer,
-        'update': WatchlistSerializer,
-        'partial_update': WatchlistSerializer
+        'list': WatchlistListCreateUpdateDeleteSerializer,
+        'retrieve': WatchlistRetrieveSerializer,
+        'create': WatchlistListCreateUpdateDeleteSerializer,
+        'delete': WatchlistListCreateUpdateDeleteSerializer,
+        'update': WatchlistListCreateUpdateDeleteSerializer,
+        'partial_update': WatchlistListCreateUpdateDeleteSerializer
     }
 
     def get_serializer_class(self):
@@ -97,7 +108,7 @@ class UserInventoryViewSet(mixins.ListModelMixin,
     filterset_class = InventoryUserFilter
 
     serializer_action_classes = {
-        'list': WatchlistSerializer,
+        'list': InventorySerializer,
     }
 
     def get_serializer_class(self):
@@ -114,7 +125,9 @@ class UserInventoryViewSet(mixins.ListModelMixin,
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=('get',), url_path='user-statistics', permission_classes=(IsAuthenticated,))
+    @action(detail=False, methods=('get',),
+            url_path='user-statistics',
+            permission_classes=(IsAuthenticated,))
     def get_statistics(self, request) -> Response:
         """Allows to get stats for user"""
         stats = User.objects.filter(id=request.user.id).aggregate(
@@ -128,18 +141,22 @@ class UserInventoryViewSet(mixins.ListModelMixin,
                 offers__order_type=OrderType.PURCHASE.value
             ), distinct=True)
         )
-        statistic = {'inventory': stats['inventories_count'],
-                     'wallets': stats['wallet_count'],
-                     'watchlist': stats['item_in_watchlist_count'],
-                     'sold_offers': stats['sold_offers_count'],
-                     'bought_offers': stats['bought_offers_count']
-                     }
-        return Response(data=statistic, status=status.HTTP_200_OK)
+
+        return Response(data=stats, status=status.HTTP_200_OK)
 
 
 class CreateUserTokenViewSet(mixins.CreateModelMixin,
+                             mixins.ListModelMixin,
                              viewsets.GenericViewSet):
     """Allows to register a new user in system and get token for him"""
     model = User
-    serializer_class = UserSerializerWithToken
+    queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
+
+    serializer_action_classes = {
+        'list': UserWalletsListSerializer,
+        'create': UserWithTokenSerializer
+    }
+
+    def get_serializer_class(self):
+        return self.serializer_action_classes[self.action]

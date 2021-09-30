@@ -38,8 +38,10 @@ class WalletCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
 
-        if data['currency'].is_not_deleted is False:
-            raise serializers.ValidationError('Sorry u cant create wallet with unavaible currency')
+        if not data['currency'].is_not_deleted:
+            raise serializers.ValidationError(
+                'Sorry u cant create wallet with unavaible currency'
+            )
         data['balance'] = 0
         return data
 
@@ -49,7 +51,11 @@ class WalletDonateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ('balance', )
-    balance = serializers.DecimalField(max_digits=20, decimal_places=2, min_value=0)
+    balance = serializers.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        min_value=0
+    )
 
     def update(self, instance, validated_data):
         instance.balance += validated_data.get('balance', 0)
@@ -64,34 +70,35 @@ class WalletDonateSerializer(serializers.ModelSerializer):
         return value
 
 
-class WalletSerializer(serializers.ModelSerializer):
+class WalletListRetrieveDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
-        fields = '__all__'
+        fields = ('user', 'currency', 'balance')
         read_only_field = ('id',)
     currency = CurrencySerializer()
     user = UserSerializer()
 
 
 class InventorySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Inventory
-        fields = '__all__'
+        fields = ('user', 'item', 'quantity')
         read_only_field = ('id',)
     item = ItemSerializer()
     user = UserSerializer()
 
 
-class WatchlistDetailSerializer(serializers.ModelSerializer):
+class WatchlistRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watchlist
-        fields = '__all__'
+        fields = ('user', 'item')
         read_only_field = ('id',)
     item = ItemSerializer()
     user = UserSerializer()
 
 
-class WatchlistSerializer(serializers.ModelSerializer):
+class WatchlistListCreateUpdateDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watchlist
         fields = ('user', 'item')
@@ -110,7 +117,7 @@ class WatchlistSerializer(serializers.ModelSerializer):
         return instance
 
 
-class UserSerializerWithToken(serializers.ModelSerializer):
+class UserWithTokenSerializer(serializers.ModelSerializer):
 
     token = serializers.SerializerMethodField()
     password = serializers.CharField(write_only=True)
@@ -135,3 +142,16 @@ class UserSerializerWithToken(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('token', 'username', 'password')
+
+
+class UserWalletsListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'wallets')
+
+    wallets = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='balance',
+        many=True
+    )
