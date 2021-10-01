@@ -92,12 +92,18 @@ REST_FRAMEWORK = {
 }
 
 # REDIS related settings
-REDIS_HOST = str(os.getenv('REDIS_HOST'))
-REDIS_PORT = str(os.getenv('REDIS_PORT'))
+REDIS_HOST = str(os.getenv('REDIS_HOST', '0.0.0.0'))
+REDIS_PORT = str(os.getenv('REDIS_PORT', '6379'))
+# RABBITMQ related settings
+RABBITMQ_PORT = str(os.getenv('RABBITMQ_PORT', '5672'))
+RABBITMQ_USER = str(os.getenv('RABBITMQ_USER', 'admin'))
+RABBITMQ_PASSWORD = str(os.getenv('RABBITMQ_PASSWORD', 'mypass'))
+RABBITMQ_HOST = str(os.getenv('RABBITMQ_HOST', 'rabbitmq'))
+# Celery related settings
 CELERY_ALWAYS_EAGER = False
-BROKER_URL = f'redis://redis:{REDIS_PORT}/0'
+CELERY_BROKER_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:{RABBITMQ_PORT}'
 CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
-CELERY_RESULT_BACKEND = f'redis://redis:{REDIS_PORT}/0'
+CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

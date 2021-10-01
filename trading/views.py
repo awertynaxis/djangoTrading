@@ -10,7 +10,8 @@ from user.permissions import (
 )
 from trading.serializers import (
     OfferRetrieveSerializer,
-    OfferListCreateSerializer,
+    OfferCreateSerializer,
+    OfferListSerializer,
     TradeListSerializer,
     TradeRetrieveSerializer
 )
@@ -29,9 +30,9 @@ class OfferViewSet(mixins.ListModelMixin,
     permission_classes = (IsAuthenticated, BlackListPermission)
 
     serializer_action_classes = {
-        'list': OfferListCreateSerializer,
+        'list': OfferListSerializer,
         'retrieve': OfferRetrieveSerializer,
-        'create': OfferListCreateSerializer
+        'create': OfferCreateSerializer
     }
 
     def get_serializer_class(self):

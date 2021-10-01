@@ -5,11 +5,16 @@ from rest_framework.response import Response
 from item.models import Item, Currency, Price
 from item.serializers import (
     ItemRetrieveSerializer,
-    ItemListDeleteSerializer,
+    ItemListSerializer,
+    ItemDeleteSerializer,
     ItemCreateUpdateSerializer,
-    CurrencySerializer,
-    PriceRetrieveUpdateSerializer,
-    PriceListSerializer
+    CurrencyCreateUpdateSerializer,
+    CurrencyDeleteSerializer,
+    CurrencyListSerializer,
+    CurrencyRetrieveSerializer,
+    PriceUpdateSerializer,
+    PriceListSerializer,
+    PriceRetrieveSerializer
 )
 from item.filters import ItemNameFilter, PriceItemFilter
 from user.permissions import BlackListPermission
@@ -27,11 +32,11 @@ class ItemViewSet(mixins.ListModelMixin,
     queryset = Item.objects.all()
     filterset_class = ItemNameFilter
     serializer_action_classes = {
-        'list': ItemListDeleteSerializer,
+        'list': ItemListSerializer,
         'retrieve': ItemRetrieveSerializer,
         'create': ItemCreateUpdateSerializer,
         'update': ItemCreateUpdateSerializer,
-        'delete': ItemListDeleteSerializer,
+        'delete': ItemDeleteSerializer,
         'partial_update': ItemCreateUpdateSerializer
     }
 
@@ -48,7 +53,19 @@ class CurrencyViewSet(mixins.ListModelMixin,
     `create`, update' and `list` actions."""
     model = Currency
     queryset = Currency.objects.filter_not_deleted()
-    serializer_class = CurrencySerializer
+    serializer_class = CurrencyCreateUpdateSerializer
+
+    serializer_action_classes = {
+        'list': CurrencyListSerializer,
+        'retrieve': CurrencyRetrieveSerializer,
+        'create': CurrencyCreateUpdateSerializer,
+        'update': CurrencyCreateUpdateSerializer,
+        'delete': CurrencyDeleteSerializer,
+        'partial_update': CurrencyCreateUpdateSerializer
+    }
+
+    def get_serializer_class(self):
+        return self.serializer_action_classes[self.action]
 
     @action(detail=False, methods=('get', ),
             url_path='all-currency',
@@ -57,7 +74,7 @@ class CurrencyViewSet(mixins.ListModelMixin,
         """Allows to get all  'currency' in system,
          available only for not banned users"""
         queryset = Currency.objects.all()
-        serializer = CurrencySerializer(queryset, many=True)
+        serializer = CurrencyListSerializer(queryset, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
@@ -73,9 +90,9 @@ class PriceViewSet(mixins.ListModelMixin,
     filterset_class = PriceItemFilter
     serializer_action_classes = {
         'list': PriceListSerializer,
-        'retrieve': PriceRetrieveUpdateSerializer,
-        'update': PriceRetrieveUpdateSerializer,
-        'partial_update': PriceRetrieveUpdateSerializer,
+        'retrieve': PriceRetrieveSerializer,
+        'update': PriceUpdateSerializer,
+        'partial_update': PriceUpdateSerializer,
         'get_filtered_date': PriceListSerializer
     }
 

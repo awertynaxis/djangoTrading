@@ -70,7 +70,14 @@ class WalletDonateSerializer(serializers.ModelSerializer):
         return value
 
 
-class WalletListRetrieveDeleteSerializer(serializers.ModelSerializer):
+class WalletList(serializers.ModelSerializer):
+    class Meta:
+        model = Wallet
+        fields = ('user', 'currency', 'balance')
+        read_only_field = ('id',)
+
+
+class WalletRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ('user', 'currency', 'balance')
@@ -79,7 +86,14 @@ class WalletListRetrieveDeleteSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
 
-class InventorySerializer(serializers.ModelSerializer):
+class WalletDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wallet
+        fields = ('id', )
+        read_only_field = ('id',)
+
+
+class InventoryListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Inventory
@@ -98,7 +112,14 @@ class WatchlistRetrieveSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
 
-class WatchlistListCreateUpdateDeleteSerializer(serializers.ModelSerializer):
+class WatchlistListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Watchlist
+        fields = ('user', 'item')
+        read_only_field = ('id',)
+
+
+class WatchlistCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watchlist
         fields = ('user', 'item')
@@ -115,6 +136,13 @@ class WatchlistListCreateUpdateDeleteSerializer(serializers.ModelSerializer):
         instance.item = item_data
         instance.save(update_fields=('item',))
         return instance
+
+
+class WatchlistDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Watchlist
+        fields = ('id', )
+        read_only_field = ('id',)
 
 
 class UserWithTokenSerializer(serializers.ModelSerializer):

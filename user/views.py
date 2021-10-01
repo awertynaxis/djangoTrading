@@ -7,12 +7,16 @@ from django.db.models import Count, Q
 from trading.enums import OrderType
 from user.models import Wallet, Watchlist, Inventory
 from user.serializers import (
-    WalletListRetrieveDeleteSerializer,
-    WatchlistListCreateUpdateDeleteSerializer,
-    InventorySerializer,
+    WalletList,
+    WalletRetrieveSerializer,
+    WalletDeleteSerializer,
     WalletCreateSerializer,
     WalletDonateSerializer,
+    InventoryListSerializer,
+    WatchlistCreateUpdateSerializer,
+    WatchlistListSerializer,
     WatchlistRetrieveSerializer,
+    WatchlistDeleteSerializer,
     UserWithTokenSerializer,
     UserWalletsListSerializer
 )
@@ -39,11 +43,11 @@ class UserWalletViewSet(mixins.ListModelMixin,
     permission_classes = (CantDelete, IsOwner)
 
     serializer_action_classes = {
-        'list': WalletListRetrieveDeleteSerializer,
-        'retrieve': WalletListRetrieveDeleteSerializer,
+        'list': WalletList,
+        'retrieve': WalletRetrieveSerializer,
         'create': WalletCreateSerializer,
         'update': WalletDonateSerializer,
-        'delete': WalletListRetrieveDeleteSerializer,
+        'delete': WalletDeleteSerializer,
         'partial_update': WalletDonateSerializer
     }
 
@@ -86,12 +90,12 @@ class UserWatchlistViewSet(mixins.ListModelMixin,
     filterset_class = WatchlistUserFilter
 
     serializer_action_classes = {
-        'list': WatchlistListCreateUpdateDeleteSerializer,
+        'list': WatchlistListSerializer,
         'retrieve': WatchlistRetrieveSerializer,
-        'create': WatchlistListCreateUpdateDeleteSerializer,
-        'delete': WatchlistListCreateUpdateDeleteSerializer,
-        'update': WatchlistListCreateUpdateDeleteSerializer,
-        'partial_update': WatchlistListCreateUpdateDeleteSerializer
+        'create': WatchlistCreateUpdateSerializer,
+        'delete': WatchlistDeleteSerializer,
+        'update': WatchlistCreateUpdateSerializer,
+        'partial_update': WatchlistCreateUpdateSerializer
     }
 
     def get_serializer_class(self):
@@ -104,11 +108,10 @@ class UserInventoryViewSet(mixins.ListModelMixin,
     via action 'get_statistics' can get some stats"""
     model = Inventory
     queryset = Inventory.objects.all()
-    serializer_class = InventorySerializer
     filterset_class = InventoryUserFilter
 
     serializer_action_classes = {
-        'list': InventorySerializer,
+        'list': InventoryListSerializer,
     }
 
     def get_serializer_class(self):

@@ -14,7 +14,16 @@ class OfferRetrieveSerializer(serializers.ModelSerializer):
     item = ItemRetrieveSerializer()
 
 
-class OfferListCreateSerializer(serializers.ModelSerializer):
+class OfferListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Offer
+        exclude = ('is_active', 'price', 'entry_quantity', 'quantity')
+        read_only_field = ('id',)
+    user = UserSerializer()
+    item = ItemRetrieveSerializer()
+
+
+class OfferCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         exclude = ('is_active', )
