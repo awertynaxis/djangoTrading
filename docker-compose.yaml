@@ -20,11 +20,10 @@ services:
       - postgres
       - redis
       - rabbitmq
+    volumes:
+      - ./:/opt/djangoTrading/
     environment:
       SERVICE: beat
-      CELERY_BROKER: amqp://admin:mypass@rabbitmq:5672
-      CELERY_RESULT_BACKEND: redis://redis:6379/0
-      DJANGO_SETTINGS_MODULE: djangoTrading.settings
   worker:
     container_name: worker
     build: .
@@ -33,11 +32,10 @@ services:
       - redis
       - rabbitmq
       - scheduler
+    volumes:
+      - ./:/opt/djangoTrading/
     environment:
       SERVICE: worker
-      CELERY_BROKER: amqp://admin:mypass@rabbitmq:5672
-      CELERY_RESULT_BACKEND: redis://redis:6379/0
-      DJANGO_SETTINGS_MODULE: djangoTrading.settings
       QUEUES: "celery,user"
       C_FORCE_ROOT: 1
   postgres:
