@@ -4,6 +4,7 @@ from item.models import Currency, Item, Price
 
 
 class CurrencyDeleteSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Currency
         fields = ('id', )
@@ -11,6 +12,7 @@ class CurrencyDeleteSerializer(serializers.ModelSerializer):
 
 
 class CurrencyListSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Currency
         fields = ('name', 'code')
@@ -18,6 +20,7 @@ class CurrencyListSerializer(serializers.ModelSerializer):
 
 
 class CurrencyRetrieveSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Currency
         fields = ('name', 'code', 'is_not_deleted')
@@ -25,6 +28,7 @@ class CurrencyRetrieveSerializer(serializers.ModelSerializer):
 
 
 class CurrencyCreateUpdateSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Currency
         fields = ('code', 'name')
@@ -42,7 +46,7 @@ class CurrencyCreateUpdateSerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_code(value):
 
-        if value != value.upper():
+        if not value.isupper():
             raise serializers.ValidationError('Code must be in upper case')
         return value
 
@@ -72,36 +76,50 @@ class ItemDeleteSerializer(serializers.ModelSerializer):
 class ItemCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ('price', 'currency', 'details')
+        fields = ('price', 'currency', 'details', 'code', 'name')
         read_only_field = ('id',)
 
-    def validate(self, data):
+    @staticmethod
+    def validate_name(value):
 
         bad_words = ('Index', 'Forex', 'Bitcoin')
-        if data['price'] > 100.00:
-            raise serializers.ValidationError("start price of stock"
-                                              " can't be upper 100.00")
-        if data['name'] in bad_words:
+        if value in bad_words:
             raise serializers.ValidationError("sorry, dont "
                                               "use bad words")
-        if data['code'] not in data['code'].upper():
-            raise serializers.ValidationError("sorry, code must "
-                                              "be in upper case")
-        if len(data['name']) > 30:
+        if len(value) > 30:
             raise serializers.ValidationError("length of name "
                                               "must be lower 30 ")
-        return data
+        return value
+
+    @staticmethod
+    def validate_code(value):
+
+        if not value.isupper():
+            raise serializers.ValidationError("sorry, code must "
+                                              "be in upper case")
+        return value
+
+    @staticmethod
+    def validate_price(value):
+
+        if value > 100.00:
+            raise serializers.ValidationError("start price of stock"
+                                              " can't be upper 100.00")
+        return value
 
 
 class ItemRetrieveSerializer(serializers.ModelSerializer):
+
+    currency = CurrencyRetrieveSerializer()
+
     class Meta:
         model = Item
         fields = ('price', 'currency', 'details')
         read_only_field = ('id', )
-    currency = CurrencyRetrieveSerializer()
 
 
 class PriceListSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Price
         fields = ('price', 'currency', 'item')
@@ -109,6 +127,7 @@ class PriceListSerializer(serializers.ModelSerializer):
 
 
 class PriceRetrieveSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Price
         fields = ('price', 'currency', 'item', 'date')
@@ -116,12 +135,14 @@ class PriceRetrieveSerializer(serializers.ModelSerializer):
 
 
 class PriceUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Price
-        fields = ('price', 'currency', 'item', 'date')
-        read_only_field = ('id', )
+
     currency = CurrencyRetrieveSerializer()
     item = ItemListSerializer()
     price = serializers.DecimalField(
         validators=(positive_price_validator,), max_digits=20, decimal_places=2
     )
+
+    class Meta:
+        model = Price
+        fields = ('price', 'currency', 'item', 'date')
+        read_only_field = ('id', )

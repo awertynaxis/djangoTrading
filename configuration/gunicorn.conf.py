@@ -1,0 +1,9 @@
+bind = '0.0.0.0:8000'
+workers = 2
+worker_connections = 1000
+threads = 2
+timeout = 30
+keepalive = 32
+max_requests = 100
+user = 'nobody'
+accesslog = '-'

@@ -25,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = str(os.getenv('SECRET_KEY'))
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = str(os.getenv('DEBUGMODE', True))
+DEBUG = os.getenv('DEBUG_MODE', 'true').lower() == 'true'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split()
 
@@ -92,13 +92,13 @@ REST_FRAMEWORK = {
 }
 
 # REDIS related settings
-REDIS_HOST = str(os.getenv('REDIS_HOST', '0.0.0.0'))
-REDIS_PORT = str(os.getenv('REDIS_PORT', '6379'))
+REDIS_HOST = os.getenv('REDIS_HOST', '0.0.0.0')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
 # RABBITMQ related settings
-RABBITMQ_PORT = str(os.getenv('RABBITMQ_PORT', '5672'))
-RABBITMQ_USER = str(os.getenv('RABBITMQ_USER', 'admin'))
-RABBITMQ_PASSWORD = str(os.getenv('RABBITMQ_PASSWORD', 'mypass'))
-RABBITMQ_HOST = str(os.getenv('RABBITMQ_HOST', 'rabbitmq'))
+RABBITMQ_PORT = os.getenv('RABBITMQ_PORT', '5672')
+RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'admin')
+RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'mypass')
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
 # Celery related settings
 CELERY_ALWAYS_EAGER = False
 CELERY_BROKER_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:{RABBITMQ_PORT}'
@@ -127,12 +127,12 @@ WSGI_APPLICATION = 'djangoTrading.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': str(os.getenv('DATABASE_ENGINE', 'django.db.backends.postgresql_psycopg2')),
-        'NAME': str(os.getenv('DATABASE_NAME', 'trading')),
-        'USER': str(os.getenv('DATABASE_USER', 'postgres')),
-        'PASSWORD': str(os.getenv('DATABASE_PASSWORD', 'postgres')),
-        'HOST': str(os.getenv('DATABASE_HOST', 'localhost')),
-        'PORT': str(os.getenv('DATABASE_PORT', '5432')),
+        'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.postgresql_psycopg2'),
+        'NAME': os.getenv('DATABASE_NAME', 'trading'),
+        'USER': os.getenv('DATABASE_USER', 'postgres'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'postgres'),
+        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+        'PORT': os.getenv('DATABASE_PORT', '5432'),
     }
 }
 

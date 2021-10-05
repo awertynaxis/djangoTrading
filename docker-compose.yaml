@@ -3,7 +3,9 @@ version: "3.3"
 services:
   backend:
     container_name: djangotrading_container
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile_backend
     volumes:
       - ./:/opt/djangoTrading/
     ports:
@@ -11,22 +13,22 @@ services:
     depends_on:
       - postgres
       - redis
-    environment:
-      SERVICE: backend
   scheduler:
     container_name: scheduler
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile_sheduler
     depends_on:
       - postgres
       - redis
       - rabbitmq
     volumes:
       - ./:/opt/djangoTrading/
-    environment:
-      SERVICE: beat
   worker:
     container_name: worker
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile_worker
     depends_on:
       - postgres
       - redis
@@ -35,7 +37,6 @@ services:
     volumes:
       - ./:/opt/djangoTrading/
     environment:
-      SERVICE: worker
       QUEUES: "celery,user"
       C_FORCE_ROOT: 1
   postgres:

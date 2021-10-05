@@ -27,16 +27,12 @@ class OfferViewSet(mixins.ListModelMixin,
     model = Offer
     queryset = Offer.objects.all()
     filterset_class = OfferUserFilter
-    permission_classes = (IsAuthenticated, BlackListPermission)
 
     serializer_action_classes = {
         'list': OfferListSerializer,
         'retrieve': OfferRetrieveSerializer,
         'create': OfferCreateSerializer
     }
-
-    def get_serializer_class(self):
-        return self.serializer_action_classes[self.action]
 
     permission_classes_by_action = {'create': (
                                         IsAuthenticated,
@@ -49,6 +45,9 @@ class OfferViewSet(mixins.ListModelMixin,
                                         IsOwner
                                     ),
                                     }
+
+    def get_serializer_class(self):
+        return self.serializer_action_classes[self.action]
 
     def get_permissions(self):
         try:

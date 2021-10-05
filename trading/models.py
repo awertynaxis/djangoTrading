@@ -15,7 +15,7 @@ class Offer(models.Model):
     item = models.ForeignKey(
         Item,
         on_delete=models.CASCADE,
-        related_name="offer"
+        related_name="offers"
     )
     entry_quantity = models.IntegerField(
         "Requested quantity",
@@ -29,8 +29,7 @@ class Offer(models.Model):
     price = models.DecimalField(
         max_digits=7,
         decimal_places=2,
-        blank=True,
-        null=True
+        default=0
     )
     is_active = models.BooleanField(default=True)
 
@@ -48,12 +47,10 @@ class Trade(models.Model):
         related_name='trade'
     )
     seller_offer = models.ForeignKey(Offer,
-                                     blank=True,
                                      null=True,
                                      related_name='seller_trade',
                                      on_delete=models.CASCADE)
     buyer_offer = models.ForeignKey(Offer,
-                                    blank=True,
                                     null=True,
                                     related_name='buyer_trade',
                                     on_delete=models.CASCADE)
