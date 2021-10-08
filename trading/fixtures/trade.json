@@ -1,0 +1,26 @@
+[
+{
+    "model": "trading.trade",
+    "pk": 1,
+    "fields": {
+        "item": 5,
+        "seller_offer": 1,
+        "buyer_offer": 4,
+        "quantity": 1,
+        "unit_price": "20.00",
+        "description": "sa"
+    }
+},
+{
+    "model": "trading.trade",
+    "pk": 2,
+    "fields": {
+        "item": 4,
+        "seller_offer": 7,
+        "buyer_offer": 8,
+        "quantity": 1,
+        "unit_price": "10.00",
+        "description": "10"
+    }
+}
+]

@@ -1,0 +1,10 @@
+[
+{
+    "model": "user.blacklist",
+    "pk": 5,
+    "fields": {
+        "user": 2,
+        "banned": true
+    }
+}
+]

@@ -99,4 +99,7 @@ venv.bak/
 *.sublime-project
 
 # static
-.static/
+./static/
+./djangoTrading/static/
+/djangoTrading/static/
+static/
