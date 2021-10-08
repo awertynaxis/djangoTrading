@@ -100,3 +100,6 @@ venv.bak/
 
 # static
 ./static/
+./djangoTrading/static/
+/djangoTrading/static/
+static/
