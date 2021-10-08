@@ -41,7 +41,6 @@ class Trade(models.Model):
     """Information about a certain transaction"""
     item = models.ForeignKey(
         Item,
-        blank=True,
         null=True,
         on_delete=models.CASCADE,
         related_name='trade'

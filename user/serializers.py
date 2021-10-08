@@ -31,13 +31,18 @@ class WalletCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ('currency', 'user')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
     def create(self, validated_data):
+        user, currency, balance = (
+            validated_data['user'],
+            validated_data['currency'],
+            validated_data['balance']
+        )
         return Wallet.objects.create(
-            user=validated_data['user'],
-            currency=validated_data['currency'],
-            balance=validated_data['balance']
+            user=user,
+            currency=currency,
+            balance=balance
         )
 
     def validate(self, data):
@@ -61,6 +66,7 @@ class WalletDonateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ('balance', )
+        read_only_fields = ('id',)
 
     def update(self, instance, validated_data):
         instance.balance += validated_data.get('balance', 0)
@@ -79,7 +85,7 @@ class WalletList(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ('user', 'currency', 'balance')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class WalletRetrieveSerializer(serializers.ModelSerializer):
@@ -90,7 +96,7 @@ class WalletRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ('user', 'currency', 'balance')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class WalletDeleteSerializer(serializers.ModelSerializer):
@@ -98,7 +104,7 @@ class WalletDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ('id', )
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class InventoryListSerializer(serializers.ModelSerializer):
@@ -109,7 +115,7 @@ class InventoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventory
         fields = ('user', 'item', 'quantity')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class WatchlistRetrieveSerializer(serializers.ModelSerializer):
@@ -120,7 +126,7 @@ class WatchlistRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watchlist
         fields = ('user', 'item')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class WatchlistListSerializer(serializers.ModelSerializer):
@@ -128,20 +134,24 @@ class WatchlistListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watchlist
         fields = ('user', 'item')
-        read_only_field = ('id',)
-
+        read_only_fields = ('id',)
+#!/usr/bin/bash
 
 class WatchlistCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Watchlist
         fields = ('user', 'item')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
     def create(self, validated_data):
+        user, item = (
+            validated_data['user'],
+            validated_data['item']
+        )
         return Watchlist.objects.create(
-            user=validated_data['user'],
-            item=validated_data['item']
+            user=user,
+            item=item
         )
 
     def update(self, instance, validated_data):
@@ -156,7 +166,7 @@ class WatchlistDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watchlist
         fields = ('id', )
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class UserWithTokenSerializer(serializers.ModelSerializer):
@@ -167,6 +177,7 @@ class UserWithTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('token', 'username', 'password')
+        read_only_fields = ('id',)
 
     @staticmethod
     def get_token(obj):
@@ -197,3 +208,4 @@ class UserWalletsListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'wallets')
+        read_only_fields = ('id',)

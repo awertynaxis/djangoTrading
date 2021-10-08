@@ -14,7 +14,7 @@ class OfferRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         exclude = ('is_active',)
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class OfferListSerializer(serializers.ModelSerializer):
@@ -25,7 +25,7 @@ class OfferListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         exclude = ('is_active', 'price', 'entry_quantity', 'quantity')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class OfferCreateSerializer(serializers.ModelSerializer):
@@ -33,7 +33,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         exclude = ('is_active', )
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
     def validate(self, data):
 
@@ -79,7 +79,7 @@ class TradeListSerializer(serializers.ModelSerializer):
                   'quantity',
                   'unit_price',
                   'description')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class TradeRetrieveSerializer(serializers.ModelSerializer):
@@ -96,4 +96,4 @@ class TradeRetrieveSerializer(serializers.ModelSerializer):
                   'quantity',
                   'unit_price',
                   'description')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)

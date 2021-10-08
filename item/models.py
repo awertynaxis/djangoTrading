@@ -1,5 +1,5 @@
 from django.db import models
-from item.managers import CurrencyManager
+from item.managers import FilteredCurrencyManager
 
 
 class StockBase(models.Model):
@@ -20,7 +20,8 @@ class Currency(StockBase):
         verbose_name = "Currency"
         verbose_name_plural = "Currencies"
 
-    objects = CurrencyManager()
+    objects = models.Manager()
+    active_objects = FilteredCurrencyManager()
 
     def __str__(self):
         return self.code
@@ -33,7 +34,6 @@ class Item(StockBase):
                                 blank=True,
                                 null=True)
     currency = models.ForeignKey(Currency,
-                                 blank=True,
                                  null=True,
                                  on_delete=models.CASCADE,
                                  related_name='item')
@@ -49,18 +49,15 @@ class Item(StockBase):
 class Price(models.Model):
     """Item prices"""
     currency = models.ForeignKey(Currency,
-                                 blank=True,
                                  null=True,
                                  on_delete=models.CASCADE,
                                  related_name='price')
     item = models.ForeignKey(Item,
-                             blank=True,
                              null=True,
                              on_delete=models.CASCADE,
                              related_name='prices')
     price = models.DecimalField(max_digits=7,
                                 decimal_places=2,
-                                blank=True,
                                 null=True)
     date = models.DateTimeField(unique=True, blank=True, null=True)
 
