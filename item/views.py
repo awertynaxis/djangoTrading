@@ -52,7 +52,7 @@ class CurrencyViewSet(mixins.ListModelMixin,
     """A viewset for model Currency that provides `retrieve`,
     `create`, update' and `list` actions."""
     model = Currency
-    queryset = Currency.objects.filter_not_deleted()
+    queryset = Currency.active_objects.all()
     serializer_class = CurrencyCreateUpdateSerializer
 
     serializer_action_classes = {

@@ -7,8 +7,7 @@ class BlackListPermission(BasePermission):
     def has_permission(self, request, view):
         user = request.user
         blacklist = BlackList.objects.filter(user=user).first()
-        if not blacklist:
-            return True
+        return not blacklist
 
 
 class IsOwner(BasePermission):
@@ -28,7 +27,4 @@ class CantDelete(BasePermission):
 
     def has_object_permission(self, request, view, obj):
 
-        if obj.balance > 0:
-            return False
-        else:
-            return True
+        return obj.balance <= 0

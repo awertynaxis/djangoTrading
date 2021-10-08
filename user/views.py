@@ -70,11 +70,8 @@ class UserWalletViewSet(mixins.ListModelMixin,
         return self.serializer_action_classes[self.action]
 
     def get_permissions(self):
-        try:
-            return [permission() for permission
-                    in self.permission_classes_by_action[self.action]]
-        except KeyError:
-            return [permission() for permission in self.permission_classes]
+        permissions = self.permission_classes_by_action.get(self.action, self.permission_classes)
+        return [permission() for permission in permissions]
 
 
 class UserWatchlistViewSet(mixins.ListModelMixin,

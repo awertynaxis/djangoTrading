@@ -3,9 +3,7 @@ version: "3.3"
 services:
   backend:
     container_name: djangotrading_container
-    build:
-      context: .
-      dockerfile: Dockerfile_backend
+    build: .
     volumes:
       - ./:/opt/djangoTrading/
     ports:
@@ -15,25 +13,23 @@ services:
       - redis
   scheduler:
     container_name: scheduler
-    build:
-      context: .
-      dockerfile: Dockerfile_sheduler
+    build: .
     depends_on:
       - postgres
       - redis
       - rabbitmq
+    entrypoint: ['/bin/bash', '/opt/djangoTrading/run_scheduler.sh']
     volumes:
       - ./:/opt/djangoTrading/
   worker:
     container_name: worker
-    build:
-      context: .
-      dockerfile: Dockerfile_worker
+    build: .
     depends_on:
       - postgres
       - redis
       - rabbitmq
       - scheduler
+    entrypoint: ['/bin/bash', '/opt/djangoTrading/run_worker.sh']
     volumes:
       - ./:/opt/djangoTrading/
     environment:

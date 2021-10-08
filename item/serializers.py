@@ -8,7 +8,7 @@ class CurrencyDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = ('id', )
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class CurrencyListSerializer(serializers.ModelSerializer):
@@ -16,7 +16,7 @@ class CurrencyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = ('name', 'code')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class CurrencyRetrieveSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class CurrencyRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = ('name', 'code', 'is_not_deleted')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class CurrencyCreateUpdateSerializer(serializers.ModelSerializer):
@@ -32,7 +32,7 @@ class CurrencyCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = ('code', 'name')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
     def create(self, validated_data):
         return Currency.objects.create(**validated_data)
@@ -63,21 +63,21 @@ class ItemListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         exclude = ('details', )
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class ItemDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ('id', )
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
 
 class ItemCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ('price', 'currency', 'details', 'code', 'name')
-        read_only_field = ('id',)
+        read_only_fields = ('id',)
 
     @staticmethod
     def validate_name(value):
@@ -115,7 +115,7 @@ class ItemRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ('price', 'currency', 'details')
-        read_only_field = ('id', )
+        read_only_fields = ('id', )
 
 
 class PriceListSerializer(serializers.ModelSerializer):
@@ -123,7 +123,7 @@ class PriceListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Price
         fields = ('price', 'currency', 'item')
-        read_only_field = ('id', )
+        read_only_fields = ('id', )
 
 
 class PriceRetrieveSerializer(serializers.ModelSerializer):
@@ -131,7 +131,7 @@ class PriceRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Price
         fields = ('price', 'currency', 'item', 'date')
-        read_only_field = ('id', )
+        read_only_fields = ('id', )
 
 
 class PriceUpdateSerializer(serializers.ModelSerializer):
@@ -145,4 +145,4 @@ class PriceUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Price
         fields = ('price', 'currency', 'item', 'date')
-        read_only_field = ('id', )
+        read_only_fields = ('id', )

@@ -10,14 +10,13 @@ class Watchlist(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='watchlists'
+        related_name='watchlist'
     )
     item = models.ForeignKey(
         Item,
-        blank=True,
         null=True,
         on_delete=models.CASCADE,
-        related_name='watch_list'
+        related_name='watchlist'
     )
 
     objects = UserWatchlistManager()
@@ -35,7 +34,6 @@ class Inventory(models.Model):
     )
     item = models.ForeignKey(
         Item,
-        blank=True,
         null=True,
         on_delete=models.CASCADE,
         related_name='inventories'
@@ -55,7 +53,6 @@ class Wallet(models.Model):
     )
     currency = models.ForeignKey(
         Currency,
-        blank=True,
         null=True,
         on_delete=models.CASCADE,
         related_name='wallets'
